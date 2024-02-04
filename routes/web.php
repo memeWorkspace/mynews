@@ -20,26 +20,26 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
+    Route::middleware('auth')->group(function () {
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
 
-Route::controller(NewsController::class)->prefix('admin')->middleware('auth')->name('news.')->group(function () {
-    Route::get('news/create', 'add')->name('add');
-});
+    Route::prefix('admin')->middleware('auth')->group(function () {
+        Route::get('news/create', [NewsController::class, 'add'])->name('news.add');
+        Route::post('news/create', [NewsController::class, 'create'])->name('news.create');
 
-Route::controller(SelfProfileController::class)->prefix('admin')->middleware('auth')->name('Profile.')->group(function () {
-    Route::get('profile/create', 'add')->name('add');
-});
-
-Route::controller(SelfProfileController::class)->prefix('admin')->middleware('auth')->name('Profile.')->group(function () {
-    Route::get('profile/edit', 'edit')->name('edit');
+        Route::get('profile/create', [SelfProfileController::class, 'add'])->name('profile.add');
+        Route::post('profile/create', [SelfProfileController::class, 'create'])->name('profile.create');
+        Route::get('profile/edit', [SelfProfileController::class, 'edit'])->name('profile.edit');
+        Route::post('profile/edit', [SelfProfileController::class, 'update'])->name('profile.update');
+    });
 });
 
 require __DIR__ . '/auth.php';
