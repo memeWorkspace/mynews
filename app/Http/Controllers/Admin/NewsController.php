@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\NewsRequest;
 use App\Models\News;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+use App\Models\History;
 
 class NewsController extends Controller
 {
@@ -45,9 +47,9 @@ class NewsController extends Controller
     public function index(Request $request)
     {
         $cond_title = $request->cond_title;
-        if ($cond_title !=''){
-            //検索されたら結果を取得
-            $posts = News::where('title',$cond_title)->get();
+        if ($cond_title != '') {
+            // 検索されたら検索結果を取得する
+            $posts = News::where('title', $cond_title)->get();
         } else {
             //それ以外は全てのニュースを取得
             $posts = News::all();
@@ -65,26 +67,34 @@ class NewsController extends Controller
         return view('admin.news.edit', ['news_form' => $news]);
     }
 
-    public function update(NewsRequest $request)
+    public function update(Request $request)
     {
-        // News Modelからデータを取得する
-        $news = News::find($request->id);
-        // 送信されてきたフォームデータを格納する
+        $this->validate($request, News::$rules);
+        $news = News::find($request->input('id'));
         $news_form = $request->all();
-        if (isset($news_form['image'])) {
+
+        if ($request->input('remove')) {
+            $news_form['image_path'] = null;
+        } elseif ($request->file('image')) {
             $path = $request->file('image')->store('public/image');
-            $news->image_path = basename($path);
-            unset($news_form['image']);
-            //画像削除のてチェックボックスにチェックがついたら処理される
-        } elseif (0 == strcmp($request->remove, 'true')) {
-            $news->image_path = null;
+            $news_form['image_path'] = basename($path);
+        } else {
+            $news_form['image_path'] = $news->image_path;
         }
+
         unset($news_form['_token']);
+        unset($news_form['image']);
         unset($news_form['remove']);
 
-        // 該当するデータを上書きして保存する
         $news->fill($news_form)->save();
-        return redirect('admin/news');
+
+        // 以下を追記
+        $history = new History;
+        $history->news_id = $news->id;
+        $history->edited_at = Carbon::now();
+        $history->save();
+
+        return redirect('admin/news/');
     }
 
     public function delete(Request $request)

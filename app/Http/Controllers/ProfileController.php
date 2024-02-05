@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProfileRequest;
-use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\Profile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use App\Models\Profilehistory;
+use Carbon\Carbon;
 
 class ProfileController extends Controller
 {
@@ -58,29 +59,30 @@ class ProfileController extends Controller
         return view('admin.profile.edit', ['profile_form' => $profile]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
-    public function update(ProfileUpdateRequest $request)
+    public function update(Request $request)
     {
-        // Modelからデータを取得する
-        $profile = Profile::find($request->id);
-        // 送信されてきたフォームデータを格納する
+        $this->validate($request, Profile::$rules);
+        $profile = Profile::find($request->input('id'));
         $profile_form = $request->all();
 
         unset($profile_form['_token']);
 
-        // 該当するデータを上書きして保存する
         $profile->fill($profile_form)->save();
-        return redirect('admin/profile');
+
+        $history = new Profilehistory;
+        $history->profile_id = $profile->id;
+        $history->edited_at = Carbon::now();
+        $history->save();
+
+        return redirect('admin/profile/');
     }
 
     public function delete(Request $request)
     {
         // 該当する Modelを取得
-        $profile = Profile::find($request->id);
+        $news = Profile::find($request->id);
         // 削除する
-        $profile->delete();
+        $news->delete();
         return redirect('admin/profile');
     }
 

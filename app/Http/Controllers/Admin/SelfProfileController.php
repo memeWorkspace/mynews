@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProfileRequest;
+use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\ProfileHistory;
 use App\Models\Profile;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class SelfProfileController extends Controller
@@ -43,13 +46,40 @@ class SelfProfileController extends Controller
     }
 
 
-    public function edit()
+    public function edit(Request $request)
     {
-        return view('admin.profile.edit');
+        $profile = Profile::find($request->id);
+        if (empty($profile)) {
+            abort(404);
+        }
+        return view('admin.profile.edit', ['profile_form' => $profile]);
     }
 
-    public function update()
+    public function update(ProfileUpdateRequest $request)
     {
-        return redirect('admin/profile/edit');
+        $profile = Profile::find($request->id);
+
+        $profile_form = $request->all();
+
+        unset($profile_form['_token']);
+
+        $profile->fill($profile_form)->save();
+
+        $history = new ProfileHistory;
+        $history->profile_id = $profile->id;
+        $history->edited_at = Carbon::now();
+        $history->save();
+
+
+        return redirect('admin/profile');
+    }
+
+    public function delete(Request $request)
+    {
+        $profile = Profile::find($request->id);
+
+        $profile->delete();
+
+        return redirect('admin/profile');
     }
 }
