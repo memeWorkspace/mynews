@@ -6,7 +6,14 @@
     <div class="row">
         <div class="col-md-8 mx-auto">
             <h2>プロフィール新規作成</h2>
-            <form action="{{ route('news.create') }}" method="post" enctype="multipart/form-data">
+            <form action="{{ route('profile.create') }}" method="post" enctype="multipart/form-data">
+                @if (count($errors) > 0)
+                <ul>
+                    @foreach($errors->all() as $e)
+                    <li>{{ $e }}</li>
+                    @endforeach
+                </ul>
+                @endif
                 <div class="form-group row mb-2">
                     <label class="col-md-2" for="name">氏名</label>
                     <div class="col-md-10">

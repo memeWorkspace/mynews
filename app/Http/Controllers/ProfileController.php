@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+use App\Http\Requests\ProfileRequest;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Profile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +14,29 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    public function add()
+    {
+        return view("admin.profile.create");
+    }
+
+    public function create(ProfileRequest $request)
+    {
+        //Newsモデルをインスタンス化
+        $news = new Profile();
+        //フォームで入力された内容を全て$formに格納
+        $form = $request->all();
+
+        // フォームから送信されてきた_tokenを削除する
+        unset($form['_token']);
+        // フォームから送信されてきたimageを削除する
+        unset($form['image']);
+
+        // データベースに保存する
+        $news->fill($form);
+        $news->save();
+
+        return redirect('admin/profile/create');
+    }
     /**
      * Display the user's profile form.
      */

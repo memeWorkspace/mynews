@@ -7,6 +7,13 @@
         <div class="col-md-8 mx-auto">
             <h2>ニュース新規作成</h2>
             <form action="{{ route('news.create') }}" method="post" enctype="multipart/form-data">
+                @if (count($errors) > 0)
+                <ul>
+                    @foreach($errors->all() as $e)
+                    <li>{{ $e }}</li>
+                    @endforeach
+                </ul>
+                @endif
                 <div class="form-group row mb-2">
                     <label class="col-md-2" for="title">タイトル</label>
                     <div class="col-md-10">
@@ -26,7 +33,7 @@
                     </div>
                 </div>
                 {{ csrf_field() }}
-                <input type="submit" class="btn btn-primary" value="登録">
+                <input type="submit" class="btn btn-primary" value="更新">
             </form>
         </div>
     </div>
