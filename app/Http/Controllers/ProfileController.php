@@ -21,8 +21,8 @@ class ProfileController extends Controller
 
     public function create(ProfileRequest $request)
     {
-        //Newsモデルをインスタンス化
-        $news = new Profile();
+        //profileモデルをインスタンス化
+        $profile = new Profile();
         //フォームで入力された内容を全て$formに格納
         $form = $request->all();
 
@@ -82,5 +82,18 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    public function index(Request $request)
+    {
+        $cond_title = $request->cond_title;
+        if ($cond_title != '') {
+            // 検索されたら検索結果を取得する
+            $posts = Profile::where('title', $cond_title)->get();
+        } else {
+            // それ以外はすべてのニュースを取得する
+            $posts = Profile::all();
+        }
+        return view('admin.profile.index', ['posts' => $posts, 'cond_title' => $cond_title]);
     }
 }

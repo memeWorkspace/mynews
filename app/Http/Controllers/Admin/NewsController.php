@@ -3,16 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\NewsRequest;
-use App\Models\News;
 use Illuminate\Http\Request;
+use App\Http\Requests\NewsRequest;
+use App\Http\Requests\ProfileRequest;
+use App\Models\News;
 
 class NewsController extends Controller
 {
+    //
     public function add()
     {
         return view("admin.news.create");
     }
+
+    
     public function create(NewsRequest $request)
     {
         //Newsモデルをインスタンス化
@@ -36,8 +40,21 @@ class NewsController extends Controller
         // データベースに保存する
         $news->fill($form);
         $news->save();
-
+        
         return redirect('admin/news/create');
+    }
+
+    public function index(Request $request)
+    {
+        $cond_title = $request->cond_title;
+        if ($cond_title !=''){
+            //検索されたら結果を取得
+            $posts = News::where('title',$cond_title)->get();
+        } else {
+            //それ以外は全てのニュースを取得
+            $posts = News::all();
+        }
+        return view('admin.news.index', ['posts' => $posts, 'cond_title' => $cond_title]);
     }
 
     public function edit()
@@ -49,4 +66,5 @@ class NewsController extends Controller
     {
         return redirect('admin/news/edit');
     }
+
 }

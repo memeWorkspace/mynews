@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\Admin\NewsController;
-use App\Http\Controllers\Admin\SelfProfileController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\SelfProfileController;
+use App\Http\Controllers\Admin\NewsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,29 +20,22 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', 'DashboardController@index')->name('dashboard');
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-    Route::middleware('auth')->group(function () {
-        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    });
-
-    Route::prefix('admin')->middleware('auth')->name('news.')->group(function () {
-        Route::get('news/create', [NewsController::class, 'add'])->name('add');
-        Route::post('news/create', [NewsController::class, 'create'])->name('create');
-    });
-
-    Route::prefix('admin')->middleware('auth')->name('profile.')->group(function () {
-        Route::get('profile/create', [ProfileController::class, 'add'])->name('add');
-        Route::post('profile/create', [ProfileController::class, 'create'])->name('create');
-    });
-
-    Route::prefix('admin')->middleware('auth')->name('profile.')->group(function () {
-        Route::get('profile/edit', [SelfProfileController::class, 'edit'])->name('edit');
-        Route::post('profile/edit', [SelfProfileController::class, 'update'])->name('update');
-    });
+Route::controller(NewsController::class)->prefix('admin')->middleware('auth')->name('news.')->group(function(){
+    Route::get('news/create', 'add')->name('add');
+    Route::post('news/create', 'create')->name('create');
+    Route::get('news', 'index')->name('index');
 });
 
-require __DIR__ . '/auth.php';
+Route::controller(SelfProfileController::class)->prefix('admin')->middleware('auth')->name('profile.')->group(function(){
+    Route::get('profile/create', 'add')->name('add');
+    Route::post('profile/create', 'create')->name('create');
+    Route::get('profile/edit', 'edit')->name('edit');
+    Route::post('profile/edit', 'update')->name('update');
+    Route::get('profile', 'index')->name('index');
+});
+
+require __DIR__.'/auth.php';
