@@ -10,7 +10,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
@@ -18,7 +17,6 @@ class ProfileController extends Controller
     {
         return view("admin.profile.create");
     }
-
     public function create(ProfileRequest $request)
     {
         //profileモデルをインスタンス化
@@ -28,39 +26,62 @@ class ProfileController extends Controller
 
         // フォームから送信されてきた_tokenを削除する
         unset($form['_token']);
-        // フォームから送信されてきたimageを削除する
-        unset($form['image']);
 
         // データベースに保存する
-        $news->fill($form);
-        $news->save();
+        $profile->fill($form);
+        $profile->save();
 
-        return redirect('admin/profile/create');
+        return redirect('admin/profile');
     }
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
+    public function index(Request $request)
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        $cond_title = $request->cond_title;
+        if ($cond_title != '') {
+            // 検索されたら検索結果を取得する
+            $posts = Profile::where('title', $cond_title)->get();
+        } else {
+            // それ以外はすべてを取得する
+            $posts = Profile::all();
+        }
+        return view('admin.profile.index', ['posts' => $posts, 'cond_title' => $cond_title]);
+    }
+
+    public function edit(Request $request)
+    {
+        $profile = Profile::find($request->id);
+        if (empty($profile)) {
+            abort(404);
+        }
+        return view('admin.profile.edit', ['profile_form' => $profile]);
     }
 
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request)
     {
-        $request->user()->fill($request->validated());
+        // Modelからデータを取得する
+        $profile = Profile::find($request->id);
+        // 送信されてきたフォームデータを格納する
+        $profile_form = $request->all();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
+        unset($profile_form['_token']);
 
-        $request->user()->save();
+        // 該当するデータを上書きして保存する
+        $profile->fill($profile_form)->save();
+        return redirect('admin/profile');
+    }
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    public function delete(Request $request)
+    {
+        // 該当する Modelを取得
+        $profile = Profile::find($request->id);
+        // 削除する
+        $profile->delete();
+        return redirect('admin/profile');
     }
 
     /**
@@ -82,18 +103,5 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
-    }
-
-    public function index(Request $request)
-    {
-        $cond_title = $request->cond_title;
-        if ($cond_title != '') {
-            // 検索されたら検索結果を取得する
-            $posts = Profile::where('title', $cond_title)->get();
-        } else {
-            // それ以外はすべてのニュースを取得する
-            $posts = Profile::all();
-        }
-        return view('admin.profile.index', ['posts' => $posts, 'cond_title' => $cond_title]);
     }
 }
