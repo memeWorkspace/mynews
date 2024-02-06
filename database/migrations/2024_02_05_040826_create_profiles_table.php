@@ -14,7 +14,7 @@ class CreateProfilesTable extends Migration
     // title と body と image_path を追記
     public function up()
     {
-        Schema::create('profiles', function (Blueprint $table) {
+        Schema::create('profile', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
             $table->string('gender');
