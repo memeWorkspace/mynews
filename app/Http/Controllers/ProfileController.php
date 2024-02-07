@@ -18,6 +18,7 @@ class ProfileController extends Controller
     {
         return view("admin.profile.create");
     }
+    
     public function create(ProfileRequest $request)
     {
         //profileモデルをインスタンス化
@@ -41,8 +42,8 @@ class ProfileController extends Controller
     {
         $cond_title = $request->cond_title;
         if ($cond_title != '') {
-            // 検索されたら検索結果を取得する
-            $posts = Profile::where('title', $cond_title)->get();
+            // 'title' カラムではなく 'name' カラムを使用する
+            $posts = Profile::where('name', 'like', '%' . $cond_title . '%')->get();
         } else {
             // それ以外はすべてを取得する
             $posts = Profile::all();
@@ -79,10 +80,11 @@ class ProfileController extends Controller
 
     public function delete(Request $request)
     {
-        // 該当する Modelを取得
-        $news = Profile::find($request->id);
-        // 削除する
-        $news->delete();
+        $profile = Profile::find($request->id);
+        if(empty($profile)) {
+            abort(404);
+        }
+        $profile->delete();
         return redirect('admin/profile');
     }
 
