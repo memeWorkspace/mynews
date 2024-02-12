@@ -4,31 +4,33 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreateProfilesTable extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * @return void
      */
-    public function up(): void
+    // title と body と image_path を追記
+    public function up()
     {
-        Schema::table('profiles', function (Blueprint $table) {
+        Schema::create('profile', function (Blueprint $table) {
+            $table->increments('id');
             $table->string('name');
             $table->string('gender');
             $table->string('hobby');
             $table->string('introduction');
+            $table->timestamps();
         });
     }
 
     /**
      * Reverse the migrations.
+     *
+     * @return void
      */
-    public function down(): void
+    public function down()
     {
-        Schema::table('profiles', function (Blueprint $table) {
-            $table->dropColumn('name');
-            $table->dropColumn('gender');
-            $table->dropColumn('hobby');
-            $table->dropColumn('introduction');
-        });
+        Schema::dropIfExists('profile');
     }
 };
